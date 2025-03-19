@@ -1,0 +1,4 @@
+pyasynchat==1.0.4
+pyasyncore==1.0.4
+pyftpdlib==2.0.1
+python-dotenv==1.0.1
