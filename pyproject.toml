@@ -1,0 +1,7 @@
+[tool.pyright]
+venvPath = "."
+venv = "server/venv"
+
+include = ["server/**/*.py", "client/**/*.py", "nids/**/*.py"]
+
+typeCheckingMode = "strict"
