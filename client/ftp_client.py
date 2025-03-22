@@ -150,7 +150,7 @@ class SecureFTPClient:
             return []
 
 
-    def download_file_from_sever(self) -> None:
+    def download_file_from_server(self) -> None:
         """
             Randomly selects a file from the FTP server and downloads it
             into the client's download directory.
@@ -177,13 +177,14 @@ class SecureFTPClient:
         """
         self.connect_to_server()
         self.upload_a_file()
-        self.download_file_from_sever()
+        self.download_file_from_server()
         self.upload_a_file()
 
 if __name__ == '__main__':
+    client = SecureFTPClient(host="192.168.56.101", port=2121, username="ftp-user", password="S3cur3P@ss!")
     try:
-        client = SecureFTPClient(host="192.168.56.101", port=2121, username="ftp-user", password="S3cur3P@ss!")
         client.run_client()
     except KeyboardInterrupt as e:
+        client.logger.info("Shutting down gracefully...")
         client.disconnect_server()
         sys.exit(0)
