@@ -21,7 +21,7 @@ class SecureFTPServer:
     """
 
     # Server configuration
-    FTP_ROOT: ClassVar[Path] = Path("ftp_server").resolve()  # making the path absolute
+    FTP_ROOT: ClassVar[Path] = Path("ftp_files").resolve()  # making the path absolute
     FTP_PORT: ClassVar[int] = 2121  # choosing this port because it is non privileged
     USER_CREDENTIALS: ClassVar[dict[str, str]] = {"ftp-user": "Secure-password@1234"}
 
@@ -32,7 +32,7 @@ class SecureFTPServer:
         """
 
         self.logger = self.setup_logging()
-        self.logger.info("Initializing the secur FTP Server")
+        self.logger.info("Initializing the secure FTP Server")
         self.authorizer = self.create_authorizer()
         self.handler = self.create_handler()
         self.server = FTPServer(("0.0.0.0", self.FTP_PORT), self.handler)
@@ -86,7 +86,9 @@ class SecureFTPServer:
         for user, password in self.USER_CREDENTIALS.items():
             try:
                 # Grant full permissions to the user ("elradfmwMT")
-                authorizer.add_user(user, password, str(self.FTP_ROOT), perm="elradfmwMT")
+                authorizer.add_user(
+                    username=user, password=password, homedir=str(self.FTP_ROOT), perm="elradfmwMT", msg_login='Login was successful', msg_quit="Goodbye"
+                )
 
                 self.logger.info(f"Added user: {user}, with home directory: {self.FTP_ROOT}")
             except Exception as e:
@@ -110,7 +112,7 @@ class SecureFTPServer:
         handler.passive_ports = range(60000, 65535)
 
         # setting a custom banner to display a message when a user connects
-        handler.banner = f"Welcome {self.USER_CREDENTIALS.keys()} to the Secure FTP Server. Authorized access only."
+        handler.banner = "Welcome to the Secure FTP Server. Authorized access only."
 
         return handler
 
@@ -123,8 +125,9 @@ class SecureFTPServer:
         try:
             self.logger.info("Starting FTP Server\n\t Ready to accept connections")
             self.server.serve_forever()
-        except Exception as error:
-            self.logger.error(f"An error occured while running FTP Server: {error}")
+        except KeyboardInterrupt as error:
+            self.logger.error(f"Server shutting down: {error}")
+            self.server.close_all()
 
 
 def main() -> None:

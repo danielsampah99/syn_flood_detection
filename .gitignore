@@ -39,6 +39,7 @@ wheels/
 
 # IDE specific
 .vscode/
+.zed/
 .idea/
 *.swp
 *.swo
@@ -60,3 +61,7 @@ wheels/
 # Client files
 /client/client_files/
 /client/downloads/
+/client/ftp_files/
+
+# Server Files
+/server/ftp_files/

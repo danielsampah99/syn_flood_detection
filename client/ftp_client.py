@@ -6,12 +6,12 @@ a designated local directory, and downloads a randomly chosen file from the serv
 """
 
 import logging
-from pathlib import Path
 import random
 import sys
 import time
-from typing import List, Optional
 from ftplib import FTP, error_perm
+from pathlib import Path
+from typing import List, Optional
 
 
 class SecureFTPClient:
@@ -27,7 +27,7 @@ class SecureFTPClient:
             download_dir (Path): Local directory where downloaded files are saved.
         """
 
-    def __init__(self, host: str, port: int, username: str, password: str, upload_directory: str = 'client_files', download_directory: str = 'downloads') -> None:
+    def __init__(self, host: str, port: int, username: str, password: str, upload_directory: str = 'ftp_files', download_directory: str = 'downloads') -> None:
 
         # connection parameters
         self.HOST = host
@@ -82,8 +82,11 @@ class SecureFTPClient:
         for attempt in range(1, max_retries + 1):
             try:
                 self.ftp = FTP()
-                self.ftp.connect(self.HOST, self.PORT)
+                self.ftp.connect(self.HOST, self.PORT, timeout=120)
+                self.logger.debug("TCP connection established")
                 self.ftp.login(self.USER, self.PASSWORD)
+                self.logger.debug("Login successful")
+                self.ftp.set_pasv(True)
                 self.logger.info(f"Connected to FTP server at {self.HOST}:{self.PORT}")
                 return True
             except Exception as e:
@@ -173,18 +176,41 @@ class SecureFTPClient:
 
     def run_client(self) -> None:
         """
-            Runs the client operations: connect, upload a file, download a file, then disconnect.
+            Runs the client operations: connect, upload a file, download a file, in a continuous operation loop.
         """
+
         self.connect_to_server()
         self.upload_a_file()
         self.download_file_from_server()
         self.upload_a_file()
 
+        try:
+            while True:
+                if not self.ftp and not self.connect_to_server():
+                    time.sleep(5)
+                    continue
+
+                try:
+                    if  random.choice([True, False]):
+                        self.upload_a_file()
+                    else:
+                        self.download_file_from_server()
+
+                    time.sleep(random.uniform(1, 5))
+
+                except Exception as error:
+                    self.logger.error(f"Something went wrong: {str(error)}")
+                    self.disconnect_server()
+
+        except KeyboardInterrupt:
+            self.logger.error("Client shutdown requested")
+            self.disconnect_server()
+
 if __name__ == '__main__':
-    client = SecureFTPClient(host="192.168.56.101", port=2121, username="ftp-user", password="S3cur3P@ss!")
+    client = SecureFTPClient(host="127.0.0.1", port=2121, username="ftp-user", password="Secure-password@1234")
     try:
         client.run_client()
-    except KeyboardInterrupt as e:
+    except KeyboardInterrupt:
         client.logger.info("Shutting down gracefully...")
         client.disconnect_server()
         sys.exit(0)
