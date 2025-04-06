@@ -32,7 +32,7 @@ logging.basicConfig(
 logger = logging.getLogger('DataProcessor')
 
 
-def extract_features_from_pcap(pcap_file: str, label: int = 0) -> pd.Dataframe:
+def extract_features_from_pcap(pcap_file: str, label: int = 0) -> pd.DataFrame:
     """
     Extract network traffic features from a pcap file for SYN flood detection.
 
